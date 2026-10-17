@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  generateName: source-steady-
+  labels:
+    app: metriclab-source
+    preset: steady
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        app: metriclab-source
+        preset: steady
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: source
+          image: metriclab-source:local
+          imagePullPolicy: Never
+          env:
+            - name: JAVA_TOOL_OPTIONS
+              value: -Djdk.httpclient.keepalive.timeout=0
+            - name: SOURCE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          args:
+            - --source.url=http://ingestion:8080/readings
+            - --source.rate=5
+            - --source.count=300
+            - --source.stop-on-error=false
